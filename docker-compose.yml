@@ -30,7 +30,7 @@ services:
       - broadcaster
       - streamtester
     ports:
-      - 5000:5000
+      - 3002:5000
   dashboard:
     depends_on: 
       - stream-sender
@@ -57,7 +57,7 @@ services:
   grafana:
     image: grafana/grafana
     ports:
-      - '3002:3000'
+      - '3004:3000'
     restart: unless-stopped
     depends_on: 
       - broadcaster

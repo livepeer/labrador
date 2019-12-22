@@ -4,9 +4,9 @@ Labrador is an automated broadcast testing and monitoring tool.
 
 ## Services
 * stream-tester `:3001`
-* grafana `:3002`
+* stream-sender `:3002`
 * dashboard `:3003` 
-* stream-sender `:5000`
+* grafana `:3004`
 
 ## Running Labrador
 
