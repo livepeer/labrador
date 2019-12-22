@@ -142,6 +142,8 @@ func (s *HTTPServer) startStream(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(err.Error()))
 		return
 	}
+	
+	cfg.DoNotClearStats = false
 
 	mid, err := s.streamer.SendStreamRequest(&cfg)
 	if err != nil {

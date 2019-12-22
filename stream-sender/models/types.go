@@ -11,6 +11,7 @@ type Stats struct {
 	DownloadedSegments           int             `json:"downloaded_segments"`
 	ShouldHaveDownloadedSegments int             `json:"should_have_downloaded_segments"`
 	FailedToDownloadSegments     int             `json:"failed_to_download_segments"`
+	ProfilesNum                  int             `json:"profiles_num"`
 	Retries                      int             `json:"retries"`
 	SuccessRate                  float64         `json:"success_rate"` // DownloadedSegments/profilesNum*SentSegments
 	ConnectionLost               int             `json:"connection_lost"`

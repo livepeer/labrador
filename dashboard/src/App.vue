@@ -102,7 +102,7 @@
                     # Renditions
                   </v-list-item-content>
                   <v-list-item-content style="font-size:11px !important;" class="overline align-end" >
-                    {{item.media_streams}}
+                    {{item.profiles_num}}
                   </v-list-item-content>
                 </v-list-item>
 
@@ -161,7 +161,7 @@
     },
     data: () => ({
       loadingTable: false,
-      sortBy: '',
+      sortBy: 'Start time',
       sortDesc: true,
       keys: [
         'Start time',

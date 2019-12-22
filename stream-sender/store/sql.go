@@ -35,6 +35,7 @@ var schema = `
 		downloadedSegments INTEGER,
 		totalDownloadSegments INTEGER,
 		failedToDownloadSegments INTEGER,
+		profilesNum INTEGER,
 		retries INTEGER,
 		successRate STRING,
 		connectionLost INTEGER,
@@ -73,8 +74,8 @@ func InitDB() (*DB, error) {
 	}
 
 	stmt, err := db.Prepare(`
-	INSERT OR IGNORE INTO stats(baseManifestID, rtmpStreams, mediaStreams, totalSegments, sentSegments, downloadedSegments, totalDownloadSegments, failedToDownloadSegments, retries, successRate, connectionLost, finished, rawSourceLatencies, rawTranscodedLatencies, gaps, startTime)
-	VALUES(:baseManifestID, :rtmpStreams, :mediaStreams, :totalSegments, :sentSegments, :downloadedSegments, :totalDownloadSegments, :failedToDownloadSegments, :retries, :successRate, :connectionLost, :finished, :rawSourceLatencies, :rawTranscodedLatencies, :gaps, :startTime)
+	INSERT OR REPLACE INTO stats(baseManifestID, rtmpStreams, mediaStreams, totalSegments, sentSegments, downloadedSegments, totalDownloadSegments, failedToDownloadSegments, profilesNum, retries, successRate, connectionLost, finished, rawSourceLatencies, rawTranscodedLatencies, gaps, startTime)
+	VALUES(:baseManifestID, :rtmpStreams, :mediaStreams, :totalSegments, :sentSegments, :downloadedSegments, :totalDownloadSegments, :failedToDownloadSegments, :profilesNum, :retries, :successRate, :connectionLost, :finished, :rawSourceLatencies, :rawTranscodedLatencies, :gaps, :startTime)
 	`)
 	if err != nil {
 		d.Close()
@@ -89,7 +90,7 @@ func InitDB() (*DB, error) {
 	}
 	d.selectStats = stmt
 
-	stmt, err = db.Prepare("SELECT * FROM stats")
+	stmt, err = db.Prepare("SELECT * FROM stats ORDER BY startTime DESC")
 	if err != nil {
 		d.Close()
 		return nil, fmt.Errorf("error preparing allStats statement: %v", err)
@@ -135,6 +136,7 @@ func (db *DB) InsertStats(manifestID string, stats *models.Stats) error {
 		sql.Named("downloadedSegments", stats.DownloadedSegments),
 		sql.Named("totalDownloadSegments", stats.ShouldHaveDownloadedSegments),
 		sql.Named("failedToDownloadSegments", stats.FailedToDownloadSegments),
+		sql.Named("profilesNum", stats.ProfilesNum),
 		sql.Named("retries", stats.Retries),
 		sql.Named("successRate", fmt.Sprintf("%f", stats.SuccessRate)),
 		sql.Named("connectionLost", stats.ConnectionLost),
@@ -158,6 +160,7 @@ func (db *DB) SelectStats(manifestID string) (*models.Stats, error) {
 		downloadedSegments           int
 		shouldHaveDownloadedSegments int
 		failedToDownloadSegments     int
+		profilesNum                  int
 		retries                      int
 		successRate                  string
 		connectionLost               int
@@ -176,6 +179,7 @@ func (db *DB) SelectStats(manifestID string) (*models.Stats, error) {
 		&downloadedSegments,
 		&shouldHaveDownloadedSegments,
 		&failedToDownloadSegments,
+		&profilesNum,
 		&retries,
 		&successRate,
 		&connectionLost,
@@ -210,6 +214,7 @@ func (db *DB) SelectStats(manifestID string) (*models.Stats, error) {
 		DownloadedSegments:           downloadedSegments,
 		ShouldHaveDownloadedSegments: shouldHaveDownloadedSegments,
 		FailedToDownloadSegments:     failedToDownloadSegments,
+		ProfilesNum:                  profilesNum,
 		Retries:                      retries,
 		SuccessRate:                  success,
 		ConnectionLost:               connectionLost,
@@ -241,6 +246,7 @@ func (db *DB) AllStats() (map[string]*models.Stats, error) {
 			downloadedSegments           int
 			shouldHaveDownloadedSegments int
 			failedToDownloadSegments     int
+			profilesNum                  int
 			retries                      int
 			successRate                  string
 			connectionLost               int
@@ -260,6 +266,7 @@ func (db *DB) AllStats() (map[string]*models.Stats, error) {
 			&downloadedSegments,
 			&shouldHaveDownloadedSegments,
 			&failedToDownloadSegments,
+			&profilesNum,
 			&retries,
 			&successRate,
 			&connectionLost,
@@ -299,6 +306,7 @@ func (db *DB) AllStats() (map[string]*models.Stats, error) {
 			DownloadedSegments:           downloadedSegments,
 			ShouldHaveDownloadedSegments: shouldHaveDownloadedSegments,
 			FailedToDownloadSegments:     failedToDownloadSegments,
+			ProfilesNum:                  profilesNum,
 			Retries:                      retries,
 			SuccessRate:                  success,
 			ConnectionLost:               connectionLost,
