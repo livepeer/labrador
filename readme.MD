@@ -52,14 +52,14 @@ Start a stream, takes in following parameters:
 
 ```
 {
-    "host": "localhost",
+    "host": "localhost", // broadcaster HTTP address
     "file_name": "official_test_source_2s_keys_24pfs.mp4", // must be present in stream-tester root dir
-    "rtmp": 1935,
-    "media": 8935,
-    "repeat": 1,
-    "simultaneous": 1,
-    "profiles_num": 2,
-    "do_not_clear_stats": false
+    "rtmp": 1935, // broadcaster RTMP port
+    "media": 8935, // broadcaster HTTP port
+    "repeat": 1, // number of times to repeat the stream
+    "simultaneous": 1, // concurrent streams
+    "profiles_num": 2, // number of requested renditions
+    "do_not_clear_stats": false // will be overwritten to 'false' by the server
 }
 ```
 
