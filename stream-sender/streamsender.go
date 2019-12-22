@@ -15,11 +15,14 @@ import (
 )
 
 func main() {
-	http := flag.String("http", "localhost:5000", "http address to run the web server on")
-	interval := flag.Duration("interval", 2*time.Hour, "interval to blast streams into the networks")
-	streamTester := flag.String("server", "localhost:3001", "http address the stream-tester server is running on")
-	broadcaster := flag.String("broadcaster", "localhost", "ip of the broadcaster")
-
+	http := flag.String("http", "localhost:5000", "http address to run the web server on (default: localhost:5000)")
+	interval := flag.Duration("interval", 1*time.Hour, "interval to blast streams into the networks (default: 1h)")
+	streamTester := flag.String("server", "localhost:3001", "http address the stream-tester server is running on (default: 3001)")
+	broadcaster := flag.String("broadcaster", "localhost", "ip of the broadcaster (default: localhost)")
+	rtmpPort := flag.Int("rtmpPort", 1935, "broadcaster rtmp port (default: 1935)")
+	mediaPort := flag.Int("mediaPort", 8935, "http port for the broadcaster (default 8935)")
+	fileName := flag.String("file", "official_test_source_2s_keys_24pfs.mp4", "video file to transcode (file must be present in the root directory of stream-tester)")
+	simultaneous := flag.Int("simultaneous", 2, "number of concurrent streams to run (default: 2)")
 	flag.Parse()
 
 	// Create a channel to receive OS signals
@@ -30,11 +33,11 @@ func main() {
 
 	cfg := &stream.Config{
 		Host:            *broadcaster,
-		Rtmp:            1935,
-		Media:           8935,
-		FileName:        "official_test_source_2s_keys_24pfs.mp4",
+		Rtmp:            *rtmpPort,
+		Media:           *mediaPort,
+		FileName:        *fileName,
 		Repeat:          1,
-		Simultaneous:    2,
+		Simultaneous:    *simultaneous,
 		ProfilesNum:     3,
 		DoNotClearStats: false,
 	}
