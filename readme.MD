@@ -35,7 +35,7 @@ DASHBOARD_EXTERNAL_URL=localhost:3002
 Retrieves the statistics for a specific stream 
 
 ```
-curl <host>:5000/stats/select -X GET -H "Content-Type: application/json" -d '{"base_manifest_id": "<manifest id>"}'
+curl <host>:3002/stats/select -X GET -H "Content-Type: application/json" -d '{"base_manifest_id": "<manifest id>"}'
 ```
 
 #### GET /stats/all
@@ -43,7 +43,7 @@ curl <host>:5000/stats/select -X GET -H "Content-Type: application/json" -d '{"b
 Retrieves the statistics for all streams
 
 ```
-curl <host>:5000/stats/all
+curl <host>:3002/stats/all
 ```
 
 #### POST /stream/start
