@@ -13,6 +13,7 @@ services:
       - 7935:7935
       - 8935:8935
     volumes:
+      - 'v_broadcaster:/root/.lpData'
       - '${KEYSTORE_DIR}:/root/.lpData/rinkeby/keystore'
   streamtester:
     build:
@@ -31,13 +32,15 @@ services:
       - streamtester
     ports:
       - 3002:5000
+    volumes:
+      - 'v_stream_sender:/tmp/streamtester'
   dashboard:
     depends_on: 
       - stream-sender
     build:
       context: ./dashboard
       args:
-        base_url: ${DASBHBOARD_EXTERNAL_URL}
+        base_url: ${DASHBOARD_EXTERNAL_URL}
     ports:
       - 3003:80
   cadvisor:
@@ -104,3 +107,6 @@ services:
     restart: unless-stopped
     volumes:
       - './prometheus.yml:/etc/prometheus/prometheus.yml'
+volumes:
+  v_broadcaster: {}
+  v_stream_sender: {}
