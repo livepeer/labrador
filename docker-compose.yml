@@ -13,7 +13,7 @@ services:
       - 7935:7935
       - 8935:8935
     volumes:
-      - '~/.lpData/rinkeby/keystore:/root/.lpData/rinkeby/keystore'
+      - '${KEYSTORE_DIR}:/root/.lpData/rinkeby/keystore'
   streamtester:
     build:
       context: ./stream-tester
@@ -37,7 +37,7 @@ services:
     build:
       context: ./dashboard
       args:
-        base_url: localhost:5000
+        base_url: ${DASBHBOARD_EXTERNAL_URL}
     ports:
       - 3003:80
   cadvisor:
