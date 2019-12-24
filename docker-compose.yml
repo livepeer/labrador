@@ -1,13 +1,8 @@
 version: '3.5'
 services:
-  orchestrator:
-    image: livepeer/go-livepeer:master
-    command: '-orchestrator -transcoder -network offchain -serviceAddr orchestrator:8936'
-    ports:
-      - 8936:8936
   broadcaster:
-    image: livepeer/go-livepeer:master
-    command: '-broadcaster -network offchain -orchAddr orchestrator:8936 -ethPassword test -monitor -rtmpAddr broadcaster:1935 -httpAddr broadcaster:8935 -cliAddr broadcaster:7935'
+    image: livepeer/go-livepeer:yfselectionlatencyscore
+    command: '-broadcaster -network ${ETHEREUM_NETWORK} -ethPassword ${ETHEREUM_PASSPHRASE} -monitor -rtmpAddr broadcaster:1935 -httpAddr broadcaster:8935 -cliAddr broadcaster:7935'
     ports:
       - 1935:1935
       - 7935:7935
@@ -26,7 +21,7 @@ services:
   stream-sender:
     build:
       context: ./stream-sender
-    command: '-interval 2h -server streamtester:3001 -broadcaster broadcaster -http stream-sender:5000'
+    command: '-server streamtester:3001 -broadcaster broadcaster -http stream-sender:5000'
     depends_on:
       - broadcaster
       - streamtester
