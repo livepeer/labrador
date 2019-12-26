@@ -2,7 +2,7 @@ version: '3.5'
 services:
   broadcaster:
     image: livepeer/go-livepeer:oselection
-    command: '-broadcaster -network ${ETHEREUM_NETWORK} -ethPassword ${ETHEREUM_PASSPHRASE} -monitor -rtmpAddr broadcaster:1935 -httpAddr broadcaster:8935 -cliAddr broadcaster:7935'
+    command: '-broadcaster -network ${ETHEREUM_NETWORK} -ethPassword ${ETHEREUM_PASSPHRASE} -monitor -rtmpAddr broadcaster:1935 -httpAddr broadcaster:8935 -cliAddr broadcaster:7935 ${BROADCASTER_CFG}'
     ports:
       - 1935:1935
       - 7935:7935
