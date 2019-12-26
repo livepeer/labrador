@@ -24,7 +24,7 @@ DASHBOARD_EXTERNAL_URL=localhost:3002
 
 - `KEYSTORE_DIR` - Labrador will preload the broadcaster container with a keystore directory, as a non-interactive terminal does not support ethereum account creation for `go-livepeer`. For ease of setup it is advisable to have an account pre-funded with test ETH for the test network you're using available here.
 
-- `DASHBOARD_EXTERNAL_URL` - The dashboard are static files served on an HTTP server. This means the javascript is executed in the user's browser and therefore the `stream-sender` API URL needs to be configured to be the external URL (or localhost when running locally). A reference to a container name/IP will try to lookup the running container on the user's host system, which wouldn't exist when the setup is ran from a cloud VM. 
+- `STREAMSENDER_EXTERNAL_URL` - The dashboard are static files served on an HTTP server. This means the javascript is executed in the user's browser and therefore the `stream-sender` API URL needs to be configured to be the external URL (or localhost when running locally). A reference to a container name/IP will try to lookup the running container on the user's host system, which wouldn't exist when the setup is ran from a cloud VM. 
 
 - `ETHEREUM_NETWORK` - Ethereum network to use, currently only `rinkeby` is supported.
 
