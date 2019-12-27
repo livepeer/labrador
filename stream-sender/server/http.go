@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"net/http"
 
+	"github.com/golang/glog"
 	"github.com/livepeer/stream-sender/store"
 	"github.com/livepeer/stream-sender/stream"
 )
@@ -51,6 +52,13 @@ func (s *HTTPServer) setupHandlers() *http.ServeMux {
 		s.startStream(w, r)
 	})
 
+	mux.HandleFunc("/config/update", func(w http.ResponseWriter, r *http.Request) {
+		s.updateConfig(w, r)
+	})
+
+	mux.HandleFunc("/config", func(w http.ResponseWriter, r *http.Request) {
+		s.getConfig(w, r)
+	})
 	return mux
 }
 
@@ -123,6 +131,14 @@ func (s *HTTPServer) selectStream(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *HTTPServer) startStream(w http.ResponseWriter, r *http.Request) {
+
+	// Config preflight request
+	s.preflight(w, r)
+	if r.Method == "OPTIONS" {
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+
 	if r.Method != "POST" {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
@@ -142,7 +158,7 @@ func (s *HTTPServer) startStream(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(err.Error()))
 		return
 	}
-	
+
 	cfg.DoNotClearStats = false
 
 	mid, err := s.streamer.SendStreamRequest(&cfg)
@@ -168,4 +184,69 @@ func (s *HTTPServer) startStream(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	w.Write(res)
+}
+
+func (s *HTTPServer) updateConfig(w http.ResponseWriter, r *http.Request) {
+
+	// Config preflight request
+	s.preflight(w, r)
+	if r.Method == "OPTIONS" {
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+
+	if r.Method != "POST" {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+
+	var cfg stream.Config
+	defer r.Body.Close()
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		glog.Error("err reading body", err)
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(err.Error()))
+		return
+	}
+
+	if err := json.Unmarshal(body, &cfg); err != nil {
+		glog.Error("err unmarshaling json", err)
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(err.Error()))
+		return
+	}
+
+	cfg.DoNotClearStats = false
+
+	s.streamer.SetConfig(&cfg)
+
+	w.Write([]byte{})
+}
+
+func (s *HTTPServer) getConfig(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "GET" {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+	cfg := s.streamer.GetConfig()
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Content-Type", "application/json")
+
+	b, err := json.Marshal(cfg)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(err.Error()))
+		return
+	}
+
+	w.Write(b)
+}
+
+func (s *HTTPServer) preflight(w http.ResponseWriter, r *http.Request) {
+	// PREFLIGHT SETUP
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
+	w.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 }

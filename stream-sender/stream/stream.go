@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"sync"
 	"time"
 
 	"github.com/golang/glog"
@@ -22,6 +23,7 @@ type Streamer struct {
 	ticker *time.Ticker
 	quit   chan interface{}
 	stats  models.StatsStore
+	mu     sync.Mutex
 }
 
 // Config to start streaming
@@ -61,7 +63,7 @@ func NewStreamer(cfg *Config, server string, interval time.Duration, stats model
 
 // Start streaming
 func (s *Streamer) Start() error {
-	mid, err := s.SendStreamRequest(s.cfg)
+	mid, err := s.SendStreamRequest(s.GetConfig())
 	if err != nil {
 		return err
 	}
@@ -70,7 +72,7 @@ func (s *Streamer) Start() error {
 	for {
 		select {
 		case <-s.ticker.C:
-			mid, err := s.SendStreamRequest(s.cfg)
+			mid, err := s.SendStreamRequest(s.GetConfig())
 			if err != nil {
 				glog.Error(err)
 			}
@@ -141,6 +143,18 @@ func (s *Streamer) SendStreamRequest(cfg *Config) (string, error) {
 	go s.pollAndFlushStats(resJSON.BaseManifestID)
 
 	return resJSON.BaseManifestID, nil
+}
+
+func (s *Streamer) SetConfig(cfg *Config) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.cfg = cfg
+}
+
+func (s *Streamer) GetConfig() *Config {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	return s.cfg
 }
 
 // pollAndFlushStats waits for a stream to finish and then writes the statistics to the database
