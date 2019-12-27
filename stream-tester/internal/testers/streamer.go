@@ -218,8 +218,8 @@ func (sr *streamer) AllStats() map[string]*model.Stats {
 
 func (sr *streamer) Stats(baseManifestID string) *model.Stats {
 	stats := &model.Stats{
-		RTMPstreams:         len(sr.uploaders),
-		MediaStreams:        len(sr.downloaders),
+		RTMPstreams:         len(sr.uploaders[baseManifestID]),
+		MediaStreams:        len(sr.downloaders[baseManifestID]),
 		TotalSegmentsToSend: sr.totalSegmentsToSend,
 		Finished:            true,
 		WowzaMode:           sr.wowzaMode,
