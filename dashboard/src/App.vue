@@ -60,6 +60,8 @@
                 <v-icon>mdi-arrow-down</v-icon>
               </v-btn>
             </v-btn-toggle>
+            <v-spacer></v-spacer>
+            <config-dialog class="pr-3" :config="config" />
           </template>
 
         </v-toolbar>
@@ -95,6 +97,15 @@
                 <v-list-item>
                   <v-list-item-content style="font-size:11px !important;" class="overline" :class="{ 'primary--text': sortBy === formatKey('success_rate') }">Success rate</v-list-item-content>
                   <v-list-item-content style="font-size:11px !important;" class="overline align-end" :class="{ 'primary--text': sortBy === formatKey('success_rate') }">{{item.success_rate}} %</v-list-item-content>
+                </v-list-item>
+
+                <v-list-item>
+                  <v-list-item-content  style="font-size:11px !important;" class="overline">
+                    Concurrent Streams
+                  </v-list-item-content>
+                  <v-list-item-content style="font-size:11px !important;" class="overline align-end" >
+                    {{item.rtmp_streams}}
+                  </v-list-item-content>
                 </v-list-item>
 
                 <v-list-item>
@@ -155,7 +166,8 @@
 </template>
 
 <script>
-  export default {
+import Config from './components/Config.vue'
+export default {
     props: {
       source: String,
     },
@@ -170,6 +182,7 @@
       ],
       itemsPerPage: 10,
       items: [],
+      config: {},
     }),
     methods: {
       parseKey: (key) => {
@@ -196,19 +209,27 @@
       }
     },
     async created() {
-      console.log("BASE URL " + process.env.VUE_APP_BASE_URL)
       this.loadingTable = true
       this.items = this.formatStats((await this.$http.get("http://" + process.env.VUE_APP_BASE_URL + "/stats/all")).data)
       this.loadingTable = false
+
       setInterval(async () => {
          this.items = this.formatStats((await this.$http.get("http://" + process.env.VUE_APP_BASE_URL + "/stats/all")).data)
       }, 30000)
+    },
+    components: {
+        "config-dialog": Config
     }
   }
 
 </script>
 
 <style>
+
+body {
+  background: var(--v-background-base) !important;
+}
+
 .v-application {
       background-color: var(--v-background-base) !important;
 }
