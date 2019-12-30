@@ -3,7 +3,7 @@ package store
 import (
 	"bytes"
 	"database/sql"
-	"encoding/binary"
+	"encoding/json"
 	"fmt"
 	"os"
 	"strconv"
@@ -40,8 +40,8 @@ var schema = `
 		successRate STRING,
 		connectionLost INTEGER,
 		finished BOOLEAN,
-		rawSourceLatencies BLOB,
-		rawTranscodedLatencies BLOB,
+		sourceLatencies BLOB,
+		transcodedLatencies BLOB,
 		gaps INTEGER,
 		startTime int64
 	)
@@ -74,8 +74,8 @@ func InitDB() (*DB, error) {
 	}
 
 	stmt, err := db.Prepare(`
-	INSERT OR REPLACE INTO stats(baseManifestID, rtmpStreams, mediaStreams, totalSegments, sentSegments, downloadedSegments, totalDownloadSegments, failedToDownloadSegments, profilesNum, retries, successRate, connectionLost, finished, rawSourceLatencies, rawTranscodedLatencies, gaps, startTime)
-	VALUES(:baseManifestID, :rtmpStreams, :mediaStreams, :totalSegments, :sentSegments, :downloadedSegments, :totalDownloadSegments, :failedToDownloadSegments, :profilesNum, :retries, :successRate, :connectionLost, :finished, :rawSourceLatencies, :rawTranscodedLatencies, :gaps, :startTime)
+	INSERT OR REPLACE INTO stats(baseManifestID, rtmpStreams, mediaStreams, totalSegments, sentSegments, downloadedSegments, totalDownloadSegments, failedToDownloadSegments, profilesNum, retries, successRate, connectionLost, finished, sourceLatencies, transcodedLatencies, gaps, startTime)
+	VALUES(:baseManifestID, :rtmpStreams, :mediaStreams, :totalSegments, :sentSegments, :downloadedSegments, :totalDownloadSegments, :failedToDownloadSegments, :profilesNum, :retries, :successRate, :connectionLost, :finished, :sourceLatencies, :transcodedLatencies, :gaps, :startTime)
 	`)
 	if err != nil {
 		d.Close()
@@ -117,12 +117,12 @@ func (db *DB) Close() error {
 func (db *DB) InsertStats(manifestID string, stats *models.Stats) error {
 	startTime := stats.StartTime.UnixNano()
 
-	rawSourceLats, err := encodeLatencies(stats.RawSourceLatencies)
+	sourceLats, err := json.Marshal(stats.SourceLatencies)
 	if err != nil {
 		return err
 	}
 
-	rawTranscodeLats, err := encodeLatencies(stats.RawTranscodedLatencies)
+	transcodedLats, err := json.Marshal(stats.TranscodedLatencies)
 	if err != nil {
 		return err
 	}
@@ -141,8 +141,8 @@ func (db *DB) InsertStats(manifestID string, stats *models.Stats) error {
 		sql.Named("successRate", fmt.Sprintf("%f", stats.SuccessRate)),
 		sql.Named("connectionLost", stats.ConnectionLost),
 		sql.Named("finished", stats.Finished),
-		sql.Named("rawSourceLatencies", rawSourceLats),
-		sql.Named("rawTranscodedLatencies", rawTranscodeLats),
+		sql.Named("sourceLatencies", sourceLats),
+		sql.Named("transcodedLatencies", transcodedLats),
 		sql.Named("gaps", stats.Gaps),
 		sql.Named("startTime", startTime),
 	)
@@ -165,8 +165,8 @@ func (db *DB) SelectStats(manifestID string) (*models.Stats, error) {
 		successRate                  string
 		connectionLost               int
 		finished                     bool
-		rawSourceLatencies           []byte
-		rawTranscodedLatencies       []byte
+		sourceLatencies              []byte
+		transcodedLatencies          []byte
 		gaps                         int
 		startTime                    int64
 	)
@@ -184,19 +184,22 @@ func (db *DB) SelectStats(manifestID string) (*models.Stats, error) {
 		&successRate,
 		&connectionLost,
 		&finished,
-		&rawSourceLatencies,
-		&rawTranscodedLatencies,
+		&sourceLatencies,
+		&transcodedLatencies,
 		&gaps,
 		&startTime,
 	); err != nil {
 		return nil, err
 	}
-	rawSourceLats, err := decodeLatencies(rawSourceLatencies)
+
+	var sourceL models.Latencies
+	var transcodedL models.Latencies
+	err := json.Unmarshal(sourceLatencies, &sourceL)
 	if err != nil {
 		return nil, err
 	}
 
-	rawTranscodedLats, err := decodeLatencies(rawTranscodedLatencies)
+	err = json.Unmarshal(transcodedLatencies, &transcodedL)
 	if err != nil {
 		return nil, err
 	}
@@ -219,8 +222,8 @@ func (db *DB) SelectStats(manifestID string) (*models.Stats, error) {
 		SuccessRate:                  success,
 		ConnectionLost:               connectionLost,
 		Finished:                     finished,
-		RawSourceLatencies:           rawSourceLats,
-		RawTranscodedLatencies:       rawTranscodedLats,
+		SourceLatencies:              sourceL,
+		TranscodedLatencies:          transcodedL,
 		Gaps:                         gaps,
 		StartTime:                    time.Unix(0, startTime),
 	}, nil
@@ -251,8 +254,8 @@ func (db *DB) AllStats() (map[string]*models.Stats, error) {
 			successRate                  string
 			connectionLost               int
 			finished                     bool
-			rawSourceLatencies           []byte
-			rawTranscodedLatencies       []byte
+			sourceLatencies              []byte
+			transcodedLatencies          []byte
 			gaps                         int
 			startTime                    int64
 		)
@@ -271,8 +274,8 @@ func (db *DB) AllStats() (map[string]*models.Stats, error) {
 			&successRate,
 			&connectionLost,
 			&finished,
-			&rawSourceLatencies,
-			&rawTranscodedLatencies,
+			&sourceLatencies,
+			&transcodedLatencies,
 			&gaps,
 			&startTime,
 		); err != nil {
@@ -280,13 +283,15 @@ func (db *DB) AllStats() (map[string]*models.Stats, error) {
 			continue
 		}
 
-		rawSourceLats, err := decodeLatencies(rawSourceLatencies)
+		var sourceL models.Latencies
+		var transcodedL models.Latencies
+		err := json.Unmarshal(sourceLatencies, &sourceL)
 		if err != nil {
 			fmt.Println(err)
 			continue
 		}
 
-		rawTranscodedLats, err := decodeLatencies(rawTranscodedLatencies)
+		err = json.Unmarshal(transcodedLatencies, &transcodedL)
 		if err != nil {
 			fmt.Println(err)
 			continue
@@ -311,28 +316,11 @@ func (db *DB) AllStats() (map[string]*models.Stats, error) {
 			SuccessRate:                  success,
 			ConnectionLost:               connectionLost,
 			Finished:                     finished,
-			RawSourceLatencies:           rawSourceLats,
-			RawTranscodedLatencies:       rawTranscodedLats,
+			SourceLatencies:              sourceL,
+			TranscodedLatencies:          transcodedL,
 			Gaps:                         gaps,
 			StartTime:                    time.Unix(0, startTime),
 		}
 	}
 	return all, nil
-}
-
-func encodeLatencies(lat []time.Duration) ([]byte, error) {
-	buf := new(bytes.Buffer)
-	if err := binary.Write(buf, binary.LittleEndian, lat); err != nil {
-		return []byte{}, err
-	}
-	return buf.Bytes(), nil
-}
-
-func decodeLatencies(b []byte) ([]time.Duration, error) {
-	buf := bytes.NewBuffer(b)
-	var lat []time.Duration
-	if err := binary.Read(buf, binary.LittleEndian, &lat); err != nil {
-		return []time.Duration{}, nil
-	}
-	return lat, nil
 }
