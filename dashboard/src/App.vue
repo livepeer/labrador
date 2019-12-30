@@ -100,6 +100,11 @@
                 </v-list-item>
 
                 <v-list-item>
+                  <v-list-item-content style="font-size:11px !important;" class="overline" :class="{ 'primary--text': sortBy === formatKey('avg_latency') }">Avg. latency</v-list-item-content>
+                  <v-list-item-content style="font-size:11px !important;" class="overline align-end" :class="{ 'primary--text': sortBy === formatKey('avg_latency') }">{{$moment.duration(item.avg_latency*Math.pow(10, -6)).asSeconds().toString().slice(0,4)}} seconds</v-list-item-content>
+                </v-list-item>
+
+                <v-list-item>
                   <v-list-item-content  style="font-size:11px !important;" class="overline">
                     Concurrent Streams
                   </v-list-item-content>
@@ -179,6 +184,7 @@ export default {
         'Start time',
         'Success rate',
         'Finished',
+        'Avg latency'
       ],
       itemsPerPage: 10,
       items: [],
@@ -203,6 +209,7 @@ export default {
         for (const key in stats) {
           let item = stats[key]
           item["base_manifest_id"] = key
+          item["avg_latency"] = item.transcoded_latencies.avg
           items.push(item)
         }
         return items
@@ -212,7 +219,6 @@ export default {
       this.loadingTable = true
       this.items = this.formatStats((await this.$http.get("http://" + process.env.VUE_APP_BASE_URL + "/stats/all")).data)
       this.loadingTable = false
-
       setInterval(async () => {
          this.items = this.formatStats((await this.$http.get("http://" + process.env.VUE_APP_BASE_URL + "/stats/all")).data)
       }, 30000)
