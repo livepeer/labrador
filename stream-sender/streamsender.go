@@ -21,7 +21,7 @@ func main() {
 	broadcaster := flag.String("broadcaster", "localhost", "ip of the broadcaster (default: localhost)")
 	rtmpPort := flag.Int("rtmpPort", 1935, "broadcaster rtmp port (default: 1935)")
 	mediaPort := flag.Int("mediaPort", 8935, "http port for the broadcaster (default 8935)")
-	fileName := flag.String("file", "official_test_source_2s_keys_24pfs.mp4", "video file to transcode (file must be present in the root directory of stream-tester)")
+	fileName := flag.String("file", "bbb_sunflower_1080p_30fps_normal_t02.mp4", "video file to transcode (file must be present in the root directory of stream-tester)")
 	simultaneous := flag.Int("simultaneous", 2, "number of concurrent streams to run (default: 2)")
 	flag.Parse()
 
