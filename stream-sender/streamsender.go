@@ -68,12 +68,12 @@ func main() {
 	fmt.Printf("Stream sender started, blasting new streams every %v hours to broadcaster at %v\n", *interval, *broadcaster)
 	fmt.Printf("sending %v copies of %v repeated %v times\n", cfg.Simultaneous, cfg.FileName, cfg.Repeat)
 	fmt.Println()
-	fmt.Println("sleeping for 30 seconds before sending streams")
+	fmt.Println("sleeping for 60 seconds before sending streams")
 	fmt.Printf("\n \n %v\n", fmt.Sprintf(strings.Repeat("*", 60)))
 
 	streamErr := make(chan error, 1)
 	go func() {
-		time.Sleep(30 * time.Second)
+		time.Sleep(60 * time.Second)
 
 		if err := streamer.Start(); err != nil {
 			streamErr <- err
