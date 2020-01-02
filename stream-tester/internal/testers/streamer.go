@@ -261,9 +261,9 @@ func (sr *streamer) Stats(baseManifestID string) *model.Stats {
 	avg, p50, p95, p99 = transcodedLatencies.Calc()
 	stats.TranscodedLatencies = model.Latencies{Avg: avg, P50: p50, P95: p95, P99: p99}
 	if stats.SentSegments > 0 {
-		stats.SuccessRate = float64(stats.DownloadedSegments) / (float64(model.ProfilesNum) * float64(stats.SentSegments)) * 100
+		stats.SuccessRate = float64(stats.DownloadedSegments) / ((float64(model.ProfilesNum) + 1) * float64(stats.SentSegments)) * 100
 	}
-	stats.ShouldHaveDownloadedSegments = (model.ProfilesNum) * stats.SentSegments
+	stats.ShouldHaveDownloadedSegments = (model.ProfilesNum + 1) * stats.SentSegments
 	stats.ProfilesNum = model.ProfilesNum
 	stats.RawSourceLatencies = sourceLatencies.Raw()
 	stats.RawTranscodedLatencies = transcodedLatencies.Raw()
