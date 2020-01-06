@@ -10,6 +10,7 @@ services:
     volumes:
       - 'v_broadcaster:/root/.lpData'
       - '${KEYSTORE_DIR}:/root/.lpData/rinkeby/keystore'
+    restart: on-failure
   streamtester:
     build:
       context: ./stream-tester
@@ -18,10 +19,11 @@ services:
       - '3001:3001'
     depends_on: 
       - broadcaster
+    restart: on-failure
   stream-sender:
     build:
       context: ./stream-sender
-    command: '-server streamtester:3001 -broadcaster broadcaster -http stream-sender:5000'
+    command: '-server streamtester:3001 -broadcaster broadcaster -http stream-sender:5000 -interval 30m'
     depends_on:
       - broadcaster
       - streamtester
@@ -29,6 +31,7 @@ services:
       - 3002:5000
     volumes:
       - 'v_stream_sender:/tmp/streamtester'
+    restart: on-failure
   dashboard:
     depends_on: 
       - stream-sender
@@ -42,7 +45,7 @@ services:
     image: 'google/cadvisor:latest'
     ports:
       - '8080:8080'
-    restart: unless-stopped
+    restart: on-failure
     volumes:
       - '/:/rootfs:ro'
       - '/var/run:/var/run:rw'
@@ -56,7 +59,7 @@ services:
     image: grafana/grafana
     ports:
       - '3004:3000'
-    restart: unless-stopped
+    restart: on-failure
     depends_on: 
       - broadcaster
       - prometheus
@@ -66,7 +69,7 @@ services:
       GF_AUTH_ANONYMOUS_ENABLED: 'True'
       GF_AUTH_ANONYMOUS_ORG_NAME: Main Org.
       GF_AUTH_ANONYMOUS_ORG_ROLE: Editor # use Viewer for production
-    restart: unless-stopped
+    restart: on-failure
     volumes:
       - './grafana/grafanaDatasources.yml:/etc/grafana/provisioning/datasources/datasources.yml'
       - './grafana/grafanaDashboards.yml:/etc/grafana/provisioning/dashboards/dashboards.yml'
@@ -99,7 +102,7 @@ services:
       - broadcaster
     ports:
       - '9090:9090'
-    restart: unless-stopped
+    restart: on-failure
     volumes:
       - './prometheus.yml:/etc/prometheus/prometheus.yml'
 volumes:
