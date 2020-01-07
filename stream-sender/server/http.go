@@ -40,25 +40,11 @@ func (s *HTTPServer) StartServer() error {
 func (s *HTTPServer) setupHandlers() *http.ServeMux {
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("/stats/all", func(w http.ResponseWriter, r *http.Request) {
-		s.allStreams(w, r)
-	})
-
-	mux.HandleFunc("/stats/select", func(w http.ResponseWriter, r *http.Request) {
-		s.selectStream(w, r)
-	})
-
-	mux.HandleFunc("/stream/start", func(w http.ResponseWriter, r *http.Request) {
-		s.startStream(w, r)
-	})
-
-	mux.HandleFunc("/config/update", func(w http.ResponseWriter, r *http.Request) {
-		s.updateConfig(w, r)
-	})
-
-	mux.HandleFunc("/config", func(w http.ResponseWriter, r *http.Request) {
-		s.getConfig(w, r)
-	})
+	mux.HandleFunc("/stats/all", s.allStreams)
+	mux.HandleFunc("/stats/select", s.selectStream)
+	mux.HandleFunc("/stream/start", s.startStream)
+	mux.HandleFunc("/config/update", s.updateConfig)
+	mux.HandleFunc("/config", s.getConfig)
 	return mux
 }
 
