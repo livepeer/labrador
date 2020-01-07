@@ -12,8 +12,7 @@ services:
       - '${KEYSTORE_DIR}:/root/.lpData/rinkeby/keystore'
     restart: on-failure
   streamtester:
-    build:
-      context: ./stream-tester
+    image: livepeer/streamtester:latest
     command: './streamtester -server -serverAddr streamtester:3001'
     ports: 
       - '3001:3001'

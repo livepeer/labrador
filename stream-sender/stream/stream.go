@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"sync"
 	"time"
 
@@ -36,14 +37,11 @@ type Config struct {
 	Simultaneous    int    `json:"simultaneous"` // How many simultaneous streams stream into broadcaster
 	ProfilesNum     int    `json:"profiles_num"` // How many transcoding profiles broadcaster configured with
 	DoNotClearStats bool   `json:"do_not_clear_stats"`
+	MeasureLatency  bool   `json:"measure_latency"`
 }
 
 type sendStreamResponse struct {
 	Success        bool   `json:"success"`
-	BaseManifestID string `json:"base_manifest_id"`
-}
-
-type statsRequest struct {
 	BaseManifestID string `json:"base_manifest_id"`
 }
 
@@ -107,6 +105,7 @@ func (s *Streamer) Stop() error {
 
 // SendStreamRequest sends a request to start streams
 func (s *Streamer) SendStreamRequest(cfg *Config) (string, error) {
+	cfg.MeasureLatency = true
 	in, err := json.Marshal(cfg)
 	if err != nil {
 		return "", err
@@ -161,12 +160,7 @@ func (s *Streamer) GetConfig() *Config {
 // It is upon the caller to implement concurrency
 func (s *Streamer) pollAndFlushStats(manifestID string) {
 	var stats models.Stats
-	m, err := json.Marshal(&statsRequest{manifestID})
-	if err != nil {
-		glog.Error(err)
-		return
-	}
-	req, err := http.NewRequest("GET", s.server+"/stats", bytes.NewBuffer(m))
+	req, err := http.NewRequest("GET", s.server+"/stats?latencies&base_manifest_id="+url.QueryEscape(manifestID), nil)
 	if err != nil {
 		glog.Error(err)
 		return
