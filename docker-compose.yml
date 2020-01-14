@@ -1,11 +1,10 @@
 version: '3.5'
 services:
   broadcaster:
-    image: livepeer/go-livepeer:oselection
+    image: livepeer/go-livepeer:0.5.3
     command: '-broadcaster -network ${ETHEREUM_NETWORK} -ethPassword ${ETHEREUM_PASSPHRASE} -monitor -rtmpAddr broadcaster:1935 -httpAddr broadcaster:8935 -cliAddr broadcaster:7935 -transcodingOptions P240p30fps16x9,P360p30fps16x9,P720p30fps16x9 ${BROADCASTER_CFG}'
     ports:
       - 1935:1935
-      - 7935:7935
       - 8935:8935
     volumes:
       - 'v_broadcaster:/root/.lpData'
@@ -23,7 +22,7 @@ services:
   stream-sender:
     build:
       context: ./stream-sender
-    command: '-server streamtester:3001 -broadcaster broadcaster -http stream-sender:5000 -interval 30m'
+    command: '-server streamtester:3001 -broadcaster broadcaster -http stream-sender:5000 -interval ${STREAMING_INTERVAL}'
     depends_on:
       - broadcaster
       - streamtester
