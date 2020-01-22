@@ -118,7 +118,7 @@
                     # Renditions
                   </v-list-item-content>
                   <v-list-item-content style="font-size:11px !important;" class="overline align-end" >
-                    {{item.profiles_num}}
+                    {{item.media_streams}}
                   </v-list-item-content>
                 </v-list-item>
 
