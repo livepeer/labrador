@@ -1,5 +1,10 @@
 version: '3.5'
 services:
+  verifier:
+    image: vergauwennico/livepeer-verifier:v1
+    volumes:
+      - 'v_broadcaster:/root/stream'
+      - 'v_verifier:/logs'
   broadcaster:
     image: livepeer/go-livepeer:mainnet
     command: '-broadcaster -network ${ETHEREUM_NETWORK} -ethPassword ${ETHEREUM_PASSPHRASE} -monitor -rtmpAddr broadcaster:1935 -httpAddr broadcaster:8935 -cliAddr broadcaster:7935 ${BROADCASTER_CFG}'
@@ -105,5 +110,6 @@ services:
     volumes:
       - './prometheus.yml:/etc/prometheus/prometheus.yml'
 volumes:
+  v_verifier: {}
   v_broadcaster: {}
   v_stream_sender: {}
