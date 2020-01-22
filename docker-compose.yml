@@ -8,6 +8,27 @@ services:
     ports:
       - 5000:5000
     command: 'scripts/api.py verifier'
+  loki:
+    image: 'grafana/loki:latest'
+    command:
+      - '-config.file=/etc/loki/local-config.yaml'
+    ports:
+      - '3100:3100'
+    restart: unless-stopped
+    volumes:
+      - './grafana/loki.yml:/etc/loki/local-config.yaml'
+  logspout:
+    image: 'darkdragon/logspout-loki:latest'
+    command:
+      - /bin/logspout
+      - 'loki://loki:3100/api/prom/push?filter.sources=stdout%2Cstderr'
+    labels:
+      logspout.exclude: 'true'
+    environment:
+      EXCLUDE_LABEL: logspout.exclude
+    restart: unless-stopped
+    volumes:
+      - '/var/run/docker.sock:/var/run/docker.sock'
   broadcaster:
     image: livepeer/go-livepeer:mainnet
     command: '-broadcaster -network ${ETHEREUM_NETWORK} -ethPassword ${ETHEREUM_PASSPHRASE} -monitor -rtmpAddr broadcaster:1935 -httpAddr broadcaster:8935 -cliAddr broadcaster:7935 ${BROADCASTER_CFG}'
@@ -19,7 +40,7 @@ services:
       - '${KEYSTORE_DIR}:/root/.lpData/${ETHEREUM_NETWORK}/keystore'
     restart: on-failure
   streamtester:
-    image: livepeer/streamtester:v0.8.0
+    image: livepeer/streamtester:v0.8.7
     command: './streamtester -server -serverAddr streamtester:3001'
     ports: 
       - '3001:3001'
