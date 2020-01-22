@@ -5,6 +5,9 @@ services:
     volumes:
       - 'v_broadcaster:/root/stream'
       - 'v_verifier:/logs'
+    ports:
+      - 5000:5000
+    command: 'scripts/api.py verifier'
   broadcaster:
     image: livepeer/go-livepeer:mainnet
     command: '-broadcaster -network ${ETHEREUM_NETWORK} -ethPassword ${ETHEREUM_PASSPHRASE} -monitor -rtmpAddr broadcaster:1935 -httpAddr broadcaster:8935 -cliAddr broadcaster:7935 ${BROADCASTER_CFG}'
@@ -27,7 +30,7 @@ services:
   stream-sender:
     build:
       context: ./stream-sender
-    command: '-server streamtester:3001 -broadcaster broadcaster -http stream-sender:5000 -interval ${STREAMING_INTERVAL}'
+    command: '-server streamtester:3001 -broadcaster broadcaster -http stream-sender:5000 -interval ${STREAMING_INTERVAL} -simultaneous ${CONCURRENT_STREAMS}'
     depends_on:
       - broadcaster
       - streamtester

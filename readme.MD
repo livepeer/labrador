@@ -30,6 +30,12 @@ DASHBOARD_EXTERNAL_URL=localhost:3002
 
 - `ETHEREUM_PASSPHRASE` - Password to unlock the ethereum account in `KEYSTORE_DIR`. This value can be either a path to file or a password. For security reasons it is advisable to use a file path.
 
+- `BROADCASTER_CFG` - Additional startup options for the broadcaster node.
+
+- `STREAMING_INTERVAL` - The interval on which to send streams.
+
+- `CONCURRENT_STREAMS` - The amount of concurrent streams to send into the broadcaster node.
+
 ### Enabling Experimental Verification
 
 Verification is done by a pre-trained [machine learning classifier](https://github.com/livepeer/verification-classifier) model and is ran as an addition service in the docker network.
