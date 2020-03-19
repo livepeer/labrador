@@ -23,6 +23,7 @@ func main() {
 	mediaPort := flag.Int("mediaPort", 8935, "http port for the broadcaster (default 8935)")
 	fileName := flag.String("file", "bbb_sunflower_1080p_30fps_normal_t02.mp4", "video file to transcode (file must be present in the root directory of stream-tester)")
 	simultaneous := flag.Int("simultaneous", 2, "number of concurrent streams to run (default: 2)")
+	dbPath := flag.String("dbPath", "/tmp/streamsender", "path to DB")
 	flag.Parse()
 
 	// Create a channel to receive OS signals

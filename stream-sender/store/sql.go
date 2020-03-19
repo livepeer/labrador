@@ -14,8 +14,6 @@ import (
 	_ "github.com/mattn/go-sqlite3" // blank import
 )
 
-const dbPath = "/tmp/streamsender/streamsender.db"
-
 // DB is an initialized DB driver with prepared statements
 type DB struct {
 	dbh *sql.DB
@@ -48,16 +46,18 @@ var schema = `
 `
 var version = 1
 
+const dbName = "/labradordb.sqlite3"
+
 // InitDB initializes a DB instance
-func InitDB() (*DB, error) {
+func InitDB(dbPath string) (*DB, error) {
 	//Make sure dbPath is present
-	if _, err := os.Stat("/tmp/streamsender/"); os.IsNotExist(err) {
-		if err = os.MkdirAll("/tmp/streamsender/", 0755); err != nil {
-			return nil, fmt.Errorf("error making /tmp/streamsender/: %v", err)
+	if _, err := os.Stat(dbPath); os.IsNotExist(err) {
+		if err = os.MkdirAll(dbPath, 0755); err != nil {
+			return nil, fmt.Errorf("error making %v err=%v", dbPath, err)
 		}
 	}
 	d := &DB{}
-	db, err := sql.Open("sqlite3", dbPath)
+	db, err := sql.Open("sqlite3", dbPath+dbName)
 	if err != nil {
 		d.Close()
 		return nil, fmt.Errorf("error opening sql DB: %v", err)

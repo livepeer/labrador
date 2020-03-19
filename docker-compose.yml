@@ -50,7 +50,7 @@ services:
   stream-sender:
     build:
       context: ./stream-sender
-    command: '-server streamtester:3001 -broadcaster broadcaster -http stream-sender:5000 -interval ${STREAMING_INTERVAL} -simultaneous ${CONCURRENT_STREAMS}'
+    command: '-server streamtester:3001 -broadcaster broadcaster -http stream-sender:5000 -interval ${STREAMING_INTERVAL} -simultaneous ${CONCURRENT_STREAMS} -dbPath /tmp/streamtester'
     depends_on:
       - broadcaster
       - streamtester
