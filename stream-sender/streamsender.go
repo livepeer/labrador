@@ -43,7 +43,7 @@ func main() {
 		DoNotClearStats: false,
 	}
 
-	db, err := store.InitDB()
+	db, err := store.InitDB(*dbPath)
 	if err != nil {
 		glog.Error(err)
 		return
