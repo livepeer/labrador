@@ -40,7 +40,7 @@ services:
       - '${KEYSTORE_DIR}:/root/.lpData/${ETHEREUM_NETWORK}/keystore'
     restart: on-failure
   streamtester:
-    image: livepeer/streamtester:v0.8.7
+    image: livepeer/streamtester:v0.9.9
     command: './streamtester -server -serverAddr streamtester:3001'
     ports: 
       - '3001:3001'
