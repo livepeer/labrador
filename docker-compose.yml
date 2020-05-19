@@ -82,25 +82,6 @@ services:
       - '/dev/kmsg:/dev/kmsg:ro'
     depends_on: 
       - broadcaster
-  grafana:
-    image: grafana/grafana
-    ports:
-      - '3004:3000'
-    restart: on-failure
-    depends_on: 
-      - broadcaster
-      - prometheus
-    environment:
-      GF_SECURITY_ADMIN_USER: admin
-      GF_SECURITY_ADMIN_PASSWORD: password
-      GF_AUTH_ANONYMOUS_ENABLED: 'True'
-      GF_AUTH_ANONYMOUS_ORG_NAME: Main Org.
-      GF_AUTH_ANONYMOUS_ORG_ROLE: Editor # use Viewer for production
-    restart: on-failure
-    volumes:
-      - './grafana/grafanaDatasources.yml:/etc/grafana/provisioning/datasources/datasources.yml'
-      - './grafana/grafanaDashboards.yml:/etc/grafana/provisioning/dashboards/dashboards.yml'
-      - './grafana/dashboards:/var/lib/grafana/dashboards'
   node-exporter:
     image: 'prom/node-exporter:latest'
     command:
@@ -118,20 +99,30 @@ services:
       - '/:/rootfs:ro'
     depends_on: 
       - broadcaster
-  prometheus:
-    image: 'prom/prometheus:latest'
-    command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
-      - '--storage.tsdb.retention.time=30d'
+  lpmonitoring:
+    image: livepeer/monitoring:latest
+    command: 
+      - '--mode=docker-compose'
+      - '--nodes=broadcaster:7935,orchestrator:7935,transcoder:7935'
+      - '--cadvisor-port=8080'
+      - '--node-exporter-port=9100'
+      - '--prometheus-storagePath=/data/prometheus'
+      - '--prometheus-externalUrl=http://localhost:9090/'
+    restart: unless-stopped
+    environment:
+      LP_PROMETHEUS_ENDPOINT: 'http://localhost:9090/'
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: password
+      GF_AUTH_ANONYMOUS_ENABLED: 'True'
+      GF_AUTH_ANONYMOUS_ORG_NAME: Main Org.
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Editor # use Viewer for production
     depends_on:
-      - cadvisor
-      - node-exporter
       - broadcaster
+      - node-exporter
+      - cadvisor
     ports:
       - '9090:9090'
-    restart: on-failure
-    volumes:
-      - './prometheus.yml:/etc/prometheus/prometheus.yml'
+      - '3004:3000'
 volumes:
   v_verifier: {}
   v_broadcaster: {}
